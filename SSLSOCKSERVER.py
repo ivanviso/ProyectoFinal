@@ -27,21 +27,41 @@ while True:
     print("Client connected: {}:{}".format(fromaddr[0], fromaddr[1]))
     conn = context.wrap_socket(newsocket, server_side=True)
     print("SSL established. Peer: {}".format(conn.getpeercert()))
-    buf = b''  # Buffer to hold received client data
+    inbuf = b''  # Buffer de data entrante
+    outbuf = b''  # Buffer de data saliente
+    bufExpect = b'AUTH' #Marcamos lo que espera el servidor para realizar el proceso de login 
+    login=bool
     try:
         while True:
             data = conn.recv(4096)
             if data:
                 # Client sent us data. Append to buffer
-                buf += data
-                public_key, private_key = wgtools.keypair()
-                conn.sendall(bytes(wgconf.wgconf(public_key), 'ascii'))
-                print(public_key)
-
+                inbuf = data
+                print("Received:", inbuf)
+                if bufExpect==b'AUTH' and inbuf==b'AUTH':
+                    conn.send(b'OK AUTH')
+                    bufExpect=b'USER'
+                    print("auth")
+                if bufExpect==b'USER' and b'USER' in inbuf:
+                    usuario=str(inbuf).split(" ", 1)
+                    conn.send(b'OK USER')
+                    bufExpect=b'PASS'
+                    print("user", usuario)
+                if bufExpect==b'PASS' and b'PASS' in inbuf:
+                    psw=str(inbuf).split(" ", 1)
+                    conn.send(b'OK PASS')
+                    bufExpect=b'AUTH'
+                    print("pass",psw)
+                    login=True
+                
+                if login==True: 
+                    public_key, private_key = wgtools.keypair()
+                    conn.sendall(bytes(wgconf.clientwgconf(public_key,private_key), 'ascii'))
+                    print(public_key)
+            
 
             else:
-                # No more data from client. Show buffer and close connection.
-                print("Received:", buf)
+                bufExpect=b'AUTH'
                 break
     finally:
         print("Closing connection")
