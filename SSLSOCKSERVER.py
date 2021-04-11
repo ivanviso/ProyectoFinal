@@ -20,7 +20,13 @@ bindsocket = socket.socket()
 bindsocket.bind((listen_addr, listen_port))
 bindsocket.listen(0)
 
-
+def doSocketLogin(user,password):
+    if user == 'ivanviso123@gmail.com' and password == 'abcABC123' : 
+        socketLogin=True
+    else: 
+        socketLogin=False
+    print(socketLogin)
+    return socketLogin
 while True:
     print("Waiting for client")
     newsocket, fromaddr = bindsocket.accept()
@@ -30,29 +36,27 @@ while True:
     inbuf = b''  # Buffer de data entrante
     outbuf = b''  # Buffer de data saliente
     bufExpect = b'AUTH' #Marcamos lo que espera el servidor para realizar el proceso de login 
-    login=bool
+    login=False
     try:
         while True:
-            data = conn.recv(4096)
-            if data:
-                # Client sent us data. Append to buffer
-                inbuf = data
+            inbuf = conn.recv(4096)
+            if inbuf:
                 print("Received:", inbuf)
                 if bufExpect==b'AUTH' and inbuf==b'AUTH':
                     conn.send(b'OK AUTH')
                     bufExpect=b'USER'
                     print("auth")
                 if bufExpect==b'USER' and b'USER' in inbuf:
-                    usuario=str(inbuf).split(" ", 1)
+                    usuario=inbuf.decode("utf-8").split(" ", 1) #Convierte la cadena de bytes a UTF-8. La divide en dos
                     conn.send(b'OK USER')
                     bufExpect=b'PASS'
-                    print("user", usuario)
+                    print("user", usuario[1])
                 if bufExpect==b'PASS' and b'PASS' in inbuf:
-                    psw=str(inbuf).split(" ", 1)
+                    psw=inbuf.decode("utf-8").split(" ", 1) #Convierte la cadena de bytes a UTF-8. La divide en dos
                     conn.send(b'OK PASS')
                     bufExpect=b'AUTH'
-                    print("pass",psw)
-                    login=True
+                    print("pass",psw[1])
+                    login=doSocketLogin(usuario[1],psw[1])
                 
                 if login==True: 
                     public_key, private_key = wgtools.keypair()

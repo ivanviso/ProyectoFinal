@@ -43,6 +43,7 @@ if ($socket = stream_socket_client(
             $reply=fread($socket,7);
             echo $reply,"\n";
             $loginstep="fin";
+            
         }
         if ($loginstep="fin") {
             $reply=fread($socket,4096);

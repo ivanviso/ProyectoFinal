@@ -14,13 +14,13 @@ def sqlite():
     cursor = conn.cursor()
     init=("""
     CREATE TABLE IF NOT EXISTS {}users (
-	ip int PRIMARY KEY ,
-   	user varchar(64) NOT NULL,
+	ip int UNIQUE ,
+   	user varchar(64) PRIMARY KEY,
 	asignado_en DATETIME DEFAULT CURRENT_TIMESTAMP
     )
     """).format(db_config["prefix"])
     cursor.execute(init)
-    cursor.execute(""" replace into users(ip,user,asignado_en) values(22,"i2v2an",datetime())""")
+    cursor.execute(""" replace into users(ip,user,asignado_en) values(232,"i22v2an",datetime())""")
     cursor.execute(""" SELECT * FROM users""")
     conn.commit()
     print(cursor.fetchall())

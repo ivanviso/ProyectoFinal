@@ -1,0 +1,4 @@
+database :
+  backend : sqlite
+  name : users.db
+  prefix : ~
