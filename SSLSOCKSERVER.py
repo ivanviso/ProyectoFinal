@@ -5,6 +5,13 @@ from socket import AF_INET, SOCK_STREAM, SO_REUSEADDR, SOL_SOCKET, SHUT_RDWR
 import ssl
 import wgtools #https://github.com/conqp/wgtools
 import wgconf
+import ipdb
+import mpwrapper
+import time
+
+    
+mpwrapper.mpwrap(ipdb.sqlite())
+
 listen_addr = '127.0.0.1'
 listen_port = 8082
 server_cert = 'server.crt'
@@ -50,14 +57,15 @@ while True:
                     usuario=inbuf.decode("utf-8").split(" ", 1) #Convierte la cadena de bytes a UTF-8. La divide en dos
                     conn.send(b'OK USER')
                     bufExpect=b'PASS'
+                    ldap_user=usuario[1]
                     print("user", usuario[1])
                 if bufExpect==b'PASS' and b'PASS' in inbuf:
                     psw=inbuf.decode("utf-8").split(" ", 1) #Convierte la cadena de bytes a UTF-8. La divide en dos
                     conn.send(b'OK PASS')
                     bufExpect=b'AUTH'
                     print("pass",psw[1])
-                    login=doSocketLogin(usuario[1],psw[1])
-                
+                    ldap_psw=psw[1]
+                    login=doSocketLogin(ldap_user,ldap_psw)
                 if login==True: 
                     public_key, private_key = wgtools.keypair()
                     conn.sendall(bytes(wgconf.clientwgconf(public_key,private_key), 'ascii'))
